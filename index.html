@@ -1,27 +1,97 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Techrome Product Upload</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <title>Techrome Product Upload</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #111;
+      color: white;
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .container {
+      width: 350px;
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 5px;
+    }
+
+    button {
+      background: #00ff99;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    svg {
+      margin-top: 15px;
+      background: white;
+      padding: 10px;
+    }
+  </style>
 </head>
+
 <body>
 
 <div class="container">
-    <h2>Techrome Product Upload</h2>
+  <h2>Techrome Product Upload</h2>
 
-    <form id="productForm">
-        <input type="text" id="name" placeholder="Product Name" required>
-        <textarea id="description" placeholder="Description" required></textarea>
-        <input type="number" id="price" placeholder="Price" required>
-        <input type="file" id="image" required>
-        <button type="submit">Submit Product</button>
-    </form>
+  <form id="productForm">
+    <input type="text" id="name" placeholder="Product Name" required>
+    <input type="number" id="price" placeholder="Price" required>
+    <button type="submit">Upload Product</button>
+  </form>
 
-    <h3>Generated Barcode</h3>
-    <svg id="barcode"></svg>
+  <svg id="barcode"></svg>
 </div>
 
-<script src="script.js"></script>
+<script>
+document.getElementById("productForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  let name = document.getElementById("name").value;
+  let price = document.getElementById("price").value;
+
+  // Generate unique barcode using timestamp
+  let barcodeValue = "TEC" + Date.now();
+
+  // Generate barcode image
+  JsBarcode("#barcode", barcodeValue, {
+    format: "CODE128",
+    width: 2,
+    height: 50,
+    displayValue: true
+  });
+
+  // Send data to Make webhook
+  fetch("https://hook.eu1.make.com/8if4qnhgeayp7gjo2vtn8oodvhy02bsf", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      name: name,
+      price: price,
+      barcode: barcodeValue
+    })
+  })
+  .then(() => alert("Product uploaded successfully!"))
+  .catch(() => alert("Error uploading product"));
+});
+</script>
+
 </body>
 </html>
