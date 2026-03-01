@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Techrome Product Upload</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h2>Techrome Product Upload</h2>
+
+    <form id="productForm">
+        <input type="text" id="name" placeholder="Product Name" required>
+        <textarea id="description" placeholder="Description" required></textarea>
+        <input type="number" id="price" placeholder="Price" required>
+        <input type="file" id="image" required>
+        <button type="submit">Submit Product</button>
+    </form>
+
+    <h3>Generated Barcode</h3>
+    <svg id="barcode"></svg>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
