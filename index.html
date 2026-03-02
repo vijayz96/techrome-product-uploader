@@ -1,96 +1,123 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Techrome Product Upload</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>motospec Product Upload</title>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       background: #111;
       color: white;
-      display: flex;
-      justify-content: center;
-      padding: 40px;
+      text-align: center;
     }
 
-    .container {
-      width: 350px;
-      background: #222;
-      padding: 20px;
-      border-radius: 10px;
-    }
-
-    input, button {
-      width: 100%;
+    input, textarea, button {
       padding: 10px;
-      margin: 8px 0;
-      border: none;
+      margin: 10px;
+      width: 250px;
       border-radius: 5px;
+      border: none;
     }
 
     button {
       background: #00ff99;
-      font-weight: bold;
       cursor: pointer;
+      font-weight: bold;
     }
 
-    svg {
-      margin-top: 15px;
-      background: white;
-      padding: 10px;
+    #loginBox {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    #mainContent {
+      display: none;
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
-  <h2>Techrome Product Upload</h2>
+<!-- LOGIN BOX -->
+<div id="loginBox">
+  <h2>Admin Login</h2>
+  <input type="password" id="adminPass" placeholder="Enter Password" />
+  <button onclick="checkLogin()">Login</button>
+</div>
 
-  <form id="productForm">
-    <input type="text" id="name" placeholder="Product Name" required>
-    <input type="number" id="price" placeholder="Price" required>
-    <button type="submit">Upload Product</button>
-  </form>
+<!-- MAIN CONTENT -->
+<div id="mainContent">
 
-  <svg id="barcode"></svg>
+<h2>motospec Product Upload</h2>
+
+<input type="text" id="name" placeholder="Product Name" required><br>
+<textarea id="description" placeholder="Description"></textarea><br>
+<input type="number" id="price" placeholder="Price"><br>
+<input type="text" id="image" placeholder="Image URL"><br>
+
+<button onclick="submitProduct()">Submit Product</button>
+
+<br><br>
+<svg id="barcode"></svg>
+
 </div>
 
 <script>
-document.getElementById("productForm").addEventListener("submit", function(e) {
-  e.preventDefault();
 
-  let name = document.getElementById("name").value;
-  let price = document.getElementById("price").value;
+// 🔐 CHANGE THIS PASSWORD
+const password = "tech";
 
-  // Generate unique barcode using timestamp
-  let barcodeValue = "TEC" + Date.now();
+function checkLogin() {
+  const input = document.getElementById("adminPass").value;
 
-  // Generate barcode image
+  if (input === password) {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("mainContent").style.display = "block";
+  } else {
+    alert("Wrong password");
+  }
+}
+
+function submitProduct() {
+
+  const name = document.getElementById("name").value;
+  const description = document.getElementById("description").value;
+  const price = document.getElementById("price").value;
+  const image = document.getElementById("image").value;
+
+  const barcodeValue = "TEC" + Date.now();
+
   JsBarcode("#barcode", barcodeValue, {
     format: "CODE128",
-    width: 2,
-    height: 50,
     displayValue: true
   });
 
-  // Send data to Make webhook
-  fetch("https://hook.eu1.make.com/8if4qnhgeayp7gjo2vtn8oodvhy02bsf", {
+  fetch("YOUR_WEBHOOK_URL_HERE", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
       name: name,
+      description: description,
       price: price,
-      barcode: barcodeValue
+      image: image,
+      barcode: barcodeValue,
+      date: new Date().toLocaleString()
     })
   })
-  .then(() => alert("Product uploaded successfully!"))
-  .catch(() => alert("Error uploading product"));
-});
+  .then(response => {
+    alert("Product Uploaded Successfully!");
+  })
+  .catch(error => {
+    alert("Error uploading product.");
+  });
+
+}
+
 </script>
 
 </body>
