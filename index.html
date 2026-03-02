@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>motospec Product Upload</title>
+  <title>Techrome Product Upload</title>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -41,22 +42,24 @@
 
 <body>
 
-<!-- LOGIN BOX -->
+<!-- LOGIN -->
 <div id="loginBox">
   <h2>Admin Login</h2>
   <input type="password" id="adminPass" placeholder="Enter Password" />
   <button onclick="checkLogin()">Login</button>
 </div>
 
-<!-- MAIN CONTENT -->
+<!-- MAIN -->
 <div id="mainContent">
 
-<h2>motospec Product Upload</h2>
+<h2>Techrome Product Upload</h2>
 
 <input type="text" id="name" placeholder="Product Name" required><br>
 <textarea id="description" placeholder="Description"></textarea><br>
 <input type="number" id="price" placeholder="Price"><br>
-<input type="text" id="image" placeholder="Image URL"><br>
+
+<!-- IMAGE FILE INPUT -->
+<input type="file" id="imageFile" accept="image/*"><br>
 
 <button onclick="submitProduct()">Submit Product</button>
 
@@ -67,12 +70,10 @@
 
 <script>
 
-// 🔐 CHANGE THIS PASSWORD
-const password = "tech";
+const password = "tec123"; // change this
 
 function checkLogin() {
   const input = document.getElementById("adminPass").value;
-
   if (input === password) {
     document.getElementById("loginBox").style.display = "none";
     document.getElementById("mainContent").style.display = "block";
@@ -81,12 +82,17 @@ function checkLogin() {
   }
 }
 
-function submitProduct() {
+async function submitProduct() {
 
   const name = document.getElementById("name").value;
   const description = document.getElementById("description").value;
   const price = document.getElementById("price").value;
-  const image = document.getElementById("image").value;
+  const file = document.getElementById("imageFile").files[0];
+
+  if (!file) {
+    alert("Please select an image.");
+    return;
+  }
 
   const barcodeValue = "TEC" + Date.now();
 
@@ -95,7 +101,24 @@ function submitProduct() {
     displayValue: true
   });
 
-  fetch("YOUR_WEBHOOK_URL_HERE", {
+  // 🔥 UPLOAD TO CLOUDINARY
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", "techrome_upload");
+
+  const cloudinaryResponse = await fetch(
+    "https://api.cloudinary.com/v1_1/dly6ohy7j/image/upload",
+    {
+      method: "POST",
+      body: formData
+    }
+  );
+
+  const cloudinaryData = await cloudinaryResponse.json();
+  const imageUrl = cloudinaryData.secure_url;
+
+  // 🚀 SEND TO MAKE WEBHOOK
+  await fetch("YOUR_WEBHOOK_URL_HERE", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -104,18 +127,13 @@ function submitProduct() {
       name: name,
       description: description,
       price: price,
-      image: image,
+      image: imageUrl,
       barcode: barcodeValue,
       date: new Date().toLocaleString()
     })
-  })
-  .then(response => {
-    alert("Product Uploaded Successfully!");
-  })
-  .catch(error => {
-    alert("Error uploading product.");
   });
 
+  alert("Product Uploaded Successfully!");
 }
 
 </script>
